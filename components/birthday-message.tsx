@@ -23,7 +23,7 @@ export default function BirthdayMessage() {
         <div className="space-y-4">
           <h2 className="text-5xl md:text-7xl font-bold text-white drop-shadow-2xl tracking-wider">Happy Birthday</h2>
           <h3 className="text-6xl md:text-8xl font-black bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text text-transparent drop-shadow-2xl animate-bounce">
-            Jerry!
+            Merry!
           </h3>
         </div>
 
