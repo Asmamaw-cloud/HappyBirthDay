@@ -15,7 +15,7 @@ export default function Sparkles() {
 
   useEffect(() => {
     const generateSparkles = () => {
-      const newSparkles = Array.from({ length: 50 }, (_, i) => ({
+      const newSparkles = Array.from({ length: 80 }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
@@ -26,7 +26,7 @@ export default function Sparkles() {
     }
 
     generateSparkles()
-    const interval = setInterval(generateSparkles, 4000)
+    const interval = setInterval(generateSparkles, 2000)
 
     return () => clearInterval(interval)
   }, [])
