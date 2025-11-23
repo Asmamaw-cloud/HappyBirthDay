@@ -85,21 +85,27 @@ export default function BirthdayPage() {
     return currentTime - startTime
   }
 
-  // Function to start playing the song
-  const startPlaying = (audioContext: AudioContext) => {
+  // Function to start the audio
+  const startAudio = () => {
     if (hasStartedAudioRef.current) return
     
-    hasStartedAudioRef.current = true
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      audioContextRef.current = audioContext
+      hasStartedAudioRef.current = true
 
-    // Play the song initially
-    const songDuration = playHappyBirthday(audioContext)
+      // Play the song initially
+      const songDuration = playHappyBirthday(audioContext)
 
-    // Set up looping - play again after the song finishes
-    loopIntervalRef.current = setInterval(() => {
-      if (audioContextRef.current && audioContextRef.current.state !== "closed") {
-        playHappyBirthday(audioContextRef.current)
-      }
-    }, songDuration * 1000 + 500) // Convert to milliseconds and add small buffer
+      // Set up looping - play again after the song finishes
+      loopIntervalRef.current = setInterval(() => {
+        if (audioContextRef.current && audioContextRef.current.state !== "closed") {
+          playHappyBirthday(audioContextRef.current)
+        }
+      }, songDuration * 1000 + 500) // Convert to milliseconds and add small buffer
+    } catch (error) {
+      console.error("Error initializing audio:", error)
+    }
   }
 
   useEffect(() => {
@@ -107,39 +113,8 @@ export default function BirthdayPage() {
     setShowConfetti(true)
     const timer = setTimeout(() => setShowConfetti(false), 5000)
 
-    // Initialize and start audio immediately on page load
-    const initAudio = async () => {
-      try {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-        audioContextRef.current = audioContext
-
-        // Try to resume if suspended (some browsers allow this)
-        if (audioContext.state === "suspended") {
-          try {
-            await audioContext.resume()
-          } catch (e) {
-            // If resume fails, try again after a short delay
-            setTimeout(async () => {
-              try {
-                await audioContext.resume()
-                startPlaying(audioContext)
-              } catch (err) {
-                console.log("Audio autoplay blocked by browser")
-              }
-            }, 100)
-            return
-          }
-        }
-
-        // Start playing immediately
-        startPlaying(audioContext)
-      } catch (error) {
-        console.error("Error initializing audio:", error)
-      }
-    }
-
-    // Start audio immediately
-    initAudio()
+    // Try to start audio immediately (may be blocked by browser)
+    startAudio()
 
     return () => {
       clearTimeout(timer)
@@ -155,6 +130,14 @@ export default function BirthdayPage() {
   const handleClick = () => {
     setShowConfetti(true)
     setTimeout(() => setShowConfetti(false), 3000)
+    
+    // Start audio on first user interaction (handles browser autoplay restrictions)
+    if (!hasStartedAudioRef.current) {
+      startAudio()
+    } else if (audioContextRef.current && audioContextRef.current.state === "suspended") {
+      // Resume if suspended
+      audioContextRef.current.resume()
+    }
   }
 
   return (
